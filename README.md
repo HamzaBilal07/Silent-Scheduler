@@ -2,122 +2,125 @@
 
 Silent Scheduler is a native Android app that automatically enables Do Not Disturb during scheduled events and restores the previous sound mode when the event ends.
 
-The app is designed for prayers, lectures, meetings, study sessions, and any other time when the phone should stay silent without the user having to remember to turn sound back on.
+It is designed for prayers, lectures, meetings, study sessions, work hours, and any other time when a phone should stay silent without the user needing to remember to turn sound back on manually.
 
-## Highlights
+## Features
 
-- Native Android app built with Kotlin and Jetpack Compose
-- Simple alarm-clock style event scheduling
+- Simple alarm-style event scheduling
 - Unlimited custom events stored locally with Room
-- Custom repeat days, including Monday-Friday, Friday-only, daily, or one-time events
-- Do Not Disturb automation using Android system access
-- Previous sound mode restore after the event ends
+- Daily, one-time, Friday-only, and custom weekday repeats
+- Do Not Disturb automation through Android system access
+- Previous sound mode restoration after each event
 - Quick DND timer for 15, 30, or 60 minutes
-- Daily prayer timings loaded from the internet using the phone location
+- Location-based daily prayer timings from the internet
 - Hanafi and Jafria fiqah options
-- Sunrise time on the Events page
+- Sunrise time display
 - Offline daily Quran ayah with Urdu translation
 - Automatic rescheduling after reboot or app update
 - Local settings storage using DataStore
 
-## App Identity
+## Screens
 
-- App name: `Silent Scheduler`
-- Package name: `com.mhamz.prayerdndmanager`
-- Current version: `1.3.9`
-- Version code: `15`
-- Minimum Android version: Android 8.0, API 26
-- Target Android version: Android 15, API 35
+- Events: scheduled DND events, sunrise, quick DND, and daily ayah
+- Prayer Timings: daily prayer timings based on location and selected fiqah
+- Settings: permissions, fiqah, restore behavior, and schedule reset controls
 
-## Permissions Used
-
-Silent Scheduler only asks for permissions needed for its core features:
-
-- Do Not Disturb access: used to silence the phone during scheduled events.
-- Exact alarm access: used to start and end DND schedules on time.
-- Notification permission: used for reminders and permission/status warnings.
-- Location permission: used to calculate prayer timings and sunrise.
-- Internet access: used to load prayer timings from the online prayer timing API.
-- Boot completed access: used to reschedule enabled events after reboot.
-
-If a permission is missing, the app does not crash. It shows a clear warning and guides the user to the correct Android settings screen.
-
-## Build Requirements
-
-This project uses:
+## Tech Stack
 
 - Kotlin
-- Jetpack Compose Material 3
+- Jetpack Compose
+- Material 3
 - Room
 - DataStore
 - Coroutines and Flow
-- Gradle wrapper
-- Android Gradle Plugin 8.7.3
-- Compile SDK 35
-- Java 17
+- AlarmManager
+- BroadcastReceiver
+- MVVM architecture
 
-The helper scripts in `scripts/` expect the shared Android runtime from the neighboring local project used during development. If you are opening this project in Android Studio on another machine, install the normal Android Studio SDK/JDK requirements and sync the Gradle project.
+## App Details
+
+- App name: `Silent Scheduler`
+- Package name: `com.mhamz.prayerdndmanager`
+- Minimum SDK: 26
+- Target SDK: 35
+
+## Permissions
+
+Silent Scheduler requests only the permissions needed for its core features:
+
+- Do Not Disturb access: enables and disables DND during scheduled events.
+- Exact alarm access: keeps event start and end actions accurate.
+- Notification permission: shows reminders and important status messages.
+- Location permission: calculates daily prayer timings and sunrise.
+- Internet access: fetches prayer timing data.
+- Boot completed access: restores enabled schedules after reboot.
+
+If a permission is missing, the app shows a clear warning and guides the user to the appropriate Android settings screen.
+
+## Getting Started
+
+Clone the repository:
+
+```bash
+git clone https://github.com/HamzaBilal07/Silent-Scheduler.git
+cd Silent-Scheduler
+```
+
+Open the project in Android Studio, let Gradle sync, then run the `app` configuration on an emulator or physical Android device.
 
 ## Build From Command Line
 
-From the project folder:
+macOS or Linux:
+
+```bash
+./gradlew :app:assembleDebug
+```
+
+Windows:
 
 ```powershell
-cd "C:\Users\mhamz\OneDrive - FAST National University\Python Files\PrayerSilentScheduler"
 .\gradlew.bat :app:assembleDebug
 ```
 
 Run unit tests:
 
-```powershell
-.\gradlew.bat :app:testDebugUnitTest
+```bash
+./gradlew :app:testDebugUnitTest
 ```
 
-Create signed release files:
+On Windows, use `.\gradlew.bat` instead of `./gradlew`.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\prepare-distribution.ps1
-```
+## Release Builds
 
-## Install On A Connected Phone
-
-Connect the phone with USB debugging enabled, then run:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\install-final-apk.ps1
-```
-
-The script installs the latest release APK from:
+Release signing requires a private keystore and a local `keystore.properties` file. A template is provided:
 
 ```text
-release\whatsapp\Silent-Scheduler-v1.3.9.apk
+keystore.properties.example
 ```
 
-## Latest Release Files
+Create `keystore.properties` locally from that template and keep it private.
 
-- Play Store upload: `release\Silent-Scheduler-v1.3.9-code15-playstore.aab`
-- Direct install APK: `release\whatsapp\Silent-Scheduler-v1.3.9.apk`
-- WhatsApp ZIP backup: `release\whatsapp\Silent-Scheduler-v1.3.9-whatsapp.zip`
-
-## Important Signing Warning
-
-Do not publish these private files:
+Files that must never be committed:
 
 ```text
 .keystore/
 keystore.properties
 ```
 
-They are ignored by `.gitignore` and must stay private. They are required for future app updates signed with the same release key.
+After signing is configured, build release artifacts with:
 
-Use `keystore.properties.example` as the public template.
+```bash
+./gradlew :app:assembleRelease :app:bundleRelease
+```
+
+The Android App Bundle generated by `bundleRelease` is the file intended for Google Play upload.
 
 ## Project Structure
 
 ```text
 app/src/main/java/com/mhamz/prayerdndmanager/
-  data/          Room, repositories, DataStore, location/prayer timing fetch
-  domain/        Domain models, time calculations, ayah provider
+  data/          Room, repositories, DataStore, location and prayer timing data
+  domain/        Domain models, repeat-day logic, time calculations, ayah provider
   permissions/   Permission checks and settings intents
   receiver/      Alarm, daily sync, and reboot receivers
   scheduler/     AlarmManager scheduling and DND control
@@ -126,11 +129,11 @@ app/src/main/java/com/mhamz/prayerdndmanager/
 
 ## Documentation
 
-- `WHATSAPP_INSTALL_GUIDE.md`: direct APK sharing instructions
-- `PLAY_STORE_CHECKLIST.md`: Play Console release checklist
-- `STORE_LISTING_DRAFT.md`: Google Play listing text
-- `PRIVACY_POLICY_DRAFT.md`: privacy policy draft for publishing
+- `PLAY_STORE_CHECKLIST.md`: Google Play release checklist
+- `STORE_LISTING_DRAFT.md`: draft Play Store listing content
+- `PRIVACY_POLICY_DRAFT.md`: privacy policy draft for publication
+- `WHATSAPP_INSTALL_GUIDE.md`: direct APK installation guide
 
 ## License
 
-Add a `LICENSE` file before publishing publicly on GitHub. MIT is a simple option if you want others to use, modify, and share the code.
+This project is licensed under the MIT License. See `LICENSE` for details.
