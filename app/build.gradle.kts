@@ -19,7 +19,7 @@ val releaseTaskRequested = gradle.startParameter.taskNames.any {
 }
 if (releaseTaskRequested && !keystorePropertiesFile.exists()) {
     throw GradleException(
-        "Release builds require keystore.properties. Run scripts/generate-upload-keystore.ps1 first."
+        "Release builds require a local keystore.properties file. Create one with storeFile, storePassword, keyAlias, and keyPassword values."
     )
 }
 

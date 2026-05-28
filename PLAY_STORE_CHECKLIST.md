@@ -21,7 +21,7 @@ Keep these files private:
 keystore.properties
 ```
 
-Use `keystore.properties.example` as a template for local signing configuration. Do not commit real passwords or private signing keys.
+Create `keystore.properties` locally for your own machine. Do not commit real passwords or private signing keys.
 
 ## Build Release Artifacts
 

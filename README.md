@@ -92,13 +92,7 @@ On Windows, use `.\gradlew.bat` instead of `./gradlew`.
 
 ## Release Builds
 
-Release signing requires a private keystore and a local `keystore.properties` file. A template is provided:
-
-```text
-keystore.properties.example
-```
-
-Create `keystore.properties` locally from that template and keep it private.
+Release signing requires a private keystore and a local `keystore.properties` file.
 
 Files that must never be committed:
 
@@ -106,6 +100,10 @@ Files that must never be committed:
 .keystore/
 keystore.properties
 ```
+
+The local file should contain the signing values expected by `app/build.gradle.kts`. Keep those values outside Git and back up the keystore privately.
+
+For open-source contributors, debug builds do not require release signing.
 
 After signing is configured, build release artifacts with:
 
