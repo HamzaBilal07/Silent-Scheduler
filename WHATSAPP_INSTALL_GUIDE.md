@@ -1,31 +1,50 @@
 # WhatsApp APK Install Guide
 
-Send this file to other Android phones:
+Use this guide when sharing Silent Scheduler directly with another Android phone outside the Play Store.
+
+## Recommended File
+
+Send this APK:
 
 ```text
 release\whatsapp\Silent-Scheduler-v1.3.9.apk
 ```
 
-If WhatsApp blocks the APK file, send this ZIP instead:
+If WhatsApp blocks the APK, send the ZIP backup instead:
 
 ```text
 release\whatsapp\Silent-Scheduler-v1.3.9-whatsapp.zip
 ```
 
-## Steps For The Other Phone
+The receiver should extract the ZIP first, then install the APK inside it.
 
-1. Download the APK from WhatsApp.
-2. If Android asks, allow WhatsApp to install unknown apps.
-3. Tap Install.
-4. Open Silent Scheduler.
-5. Grant the requested accesses:
-   - Do Not Disturb access
-   - Exact alarm access
-   - Notification permission
-   - Location permission, if prayer timings are needed
+## Install Steps On The Other Phone
 
-## Important
+1. Download the APK or ZIP from WhatsApp.
+2. If using the ZIP, extract it first.
+3. Tap the APK file.
+4. If Android asks, allow WhatsApp or the file manager to install unknown apps.
+5. Tap Install.
+6. Open Silent Scheduler.
+7. Follow the in-app permission setup.
 
-The APK is signed with the same release key as the Play Store build. Future APK updates must be signed with the same `.keystore` file in this project.
+## Required Access After Install
 
-If a phone already has an older development/test version installed and Android says the update is incompatible, uninstall the old Silent Scheduler app once, then install this APK again. This happens because the old test app was signed with a different development key.
+The app may ask for:
+
+- Do Not Disturb access
+- Exact alarm access on Android 12+
+- Notification permission on Android 13+
+- Location permission for automatic prayer timings
+
+The app guides the user to the exact Android settings screen when access is needed.
+
+## Updating Later
+
+Future APK updates must be signed with the same release key. If the phone already has this release build installed, a newer signed APK can be installed over it normally.
+
+If Android says the update is incompatible, uninstall the older test/development version once, then install the latest APK again. Uninstalling removes local app schedules and settings.
+
+## Safety Note
+
+Only share APKs generated from this project by the trusted developer. Users should avoid installing APK files from unknown or modified sources.
