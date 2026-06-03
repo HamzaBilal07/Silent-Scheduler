@@ -2,62 +2,47 @@
 
 Silent Scheduler is a native Android app that automatically enables Do Not Disturb during scheduled events and restores the previous sound mode when the event ends.
 
-It is designed for prayers, lectures, meetings, study sessions, work hours, and any other time when a phone should stay silent without the user needing to remember to turn sound back on manually.
+It is useful for prayers, lectures, meetings, study sessions, work hours, and any situation where a phone should stay silent for a fixed time without the user forgetting to turn sound back on.
 
 ## Features
 
-- Simple alarm-style event scheduling
-- Unlimited custom events stored locally with Room
-- Daily, one-time, Friday-only, and custom weekday repeats
-- Do Not Disturb automation through Android system access
-- Previous sound mode restoration after each event
-- Quick DND timer for 15, 30, or 60 minutes
-- Location-based daily prayer timings from the internet
-- Hanafi and Jafria fiqah options
-- Sunrise time display
-- Offline daily Quran ayah with Urdu translation
-- Automatic rescheduling after reboot or app update
-- Local settings storage using DataStore
+- Alarm-style event scheduling
+- Unlimited custom events stored locally
+- Daily, one-time, Friday-only, weekday, and custom-day repeats
+- Do Not Disturb automation with previous sound mode restoration
+- Reliable alarm scheduling with reboot and app-update rescheduling
+- Location-based daily prayer timings
+- Hanafi and Jafria prayer timing options
+- Current prayer row highlighting
+- Sunrise time and daily Quran ayah with Urdu translation
+- Quick DND timer
+- Simple Material 3 interface built with Jetpack Compose
 
-## Screens
+## Download And Install
 
-- Events: scheduled DND events, sunrise, quick DND, and daily ayah
-- Prayer Timings: daily prayer timings based on location and selected fiqah
-- Settings: permissions, fiqah, restore behavior, and schedule reset controls
+The easiest way to use the app is to download the latest APK from GitHub Releases.
 
-## Tech Stack
+1. Open the [Releases page](https://github.com/HamzaBilal07/Silent-Scheduler/releases).
+2. Open the latest release.
+3. Download the APK file, for example `Silent-Scheduler-v1.4.1.apk`.
+4. On your Android phone, open the APK.
+5. If Android asks, allow installation from that source.
+6. Open Silent Scheduler and grant the required permissions from the onboarding/settings screen.
 
-- Kotlin
-- Jetpack Compose
-- Material 3
-- Room
-- DataStore
-- Coroutines and Flow
-- AlarmManager
-- BroadcastReceiver
-- MVVM architecture
+Required permissions:
 
-## App Details
+- Do Not Disturb access: needed to enable and restore DND.
+- Exact alarm access: needed for accurate start and end times.
+- Notification permission: needed for status and reminder notifications.
+- Location permission: needed only for location-based prayer timings.
 
-- App name: `Silent Scheduler`
-- Package name: `com.mhamz.prayerdndmanager`
-- Minimum SDK: 26
-- Target SDK: 35
+## Build From Source
 
-## Permissions
+Requirements:
 
-Silent Scheduler requests only the permissions needed for its core features:
-
-- Do Not Disturb access: enables and disables DND during scheduled events.
-- Exact alarm access: keeps event start and end actions accurate.
-- Notification permission: shows reminders and important status messages.
-- Location permission: calculates daily prayer timings and sunrise.
-- Internet access: fetches prayer timing data.
-- Boot completed access: restores enabled schedules after reboot.
-
-If a permission is missing, the app shows a clear warning and guides the user to the appropriate Android settings screen.
-
-## Getting Started
+- Android Studio
+- JDK 17
+- Android SDK 35
 
 Clone the repository:
 
@@ -66,17 +51,15 @@ git clone https://github.com/HamzaBilal07/Silent-Scheduler.git
 cd Silent-Scheduler
 ```
 
-Open the project in Android Studio, let Gradle sync, then run the `app` configuration on an emulator or physical Android device.
+Open the project in Android Studio, let Gradle sync, then run the `app` configuration on a phone or emulator.
 
-## Build From Command Line
-
-macOS or Linux:
+Build a debug APK:
 
 ```bash
 ./gradlew :app:assembleDebug
 ```
 
-Windows:
+On Windows:
 
 ```powershell
 .\gradlew.bat :app:assembleDebug
@@ -88,50 +71,89 @@ Run unit tests:
 ./gradlew :app:testDebugUnitTest
 ```
 
-On Windows, use `.\gradlew.bat` instead of `./gradlew`.
-
 ## Release Builds
 
-Release signing requires a private keystore and a local `keystore.properties` file.
+Release builds require a private signing keystore. Signing files are intentionally not included in this repository.
 
-Files that must never be committed:
+Never commit:
 
 ```text
 .keystore/
 keystore.properties
+*.jks
+*.keystore
+*.p12
+*.pem
+release/
 ```
 
-The local file should contain the signing values expected by `app/build.gradle.kts`. Keep those values outside Git and back up the keystore privately.
-
-For open-source contributors, debug builds do not require release signing.
-
-After signing is configured, build release artifacts with:
+After configuring local signing, build release artifacts:
 
 ```bash
 ./gradlew :app:assembleRelease :app:bundleRelease
 ```
 
-The Android App Bundle generated by `bundleRelease` is the file intended for Google Play upload.
+Use:
+
+- APK for direct sharing/installing on Android phones.
+- AAB for Google Play Console upload.
+
+## Updating GitHub Releases
+
+Release APK/AAB files should be uploaded to GitHub Releases, not committed to the repository.
+
+Manual GitHub steps:
+
+1. Go to the [Releases page](https://github.com/HamzaBilal07/Silent-Scheduler/releases).
+2. Click **Draft a new release**.
+3. Choose the latest tag, for example `v1.4.1`.
+4. Title it `Silent Scheduler v1.4.1`.
+5. Upload the generated APK, AAB, ZIP backup, and checksum file.
+6. Mark it as the latest release.
+7. Publish the release.
+8. If an older release should no longer be shown as latest, edit or delete that older release after the new one is published.
+
+GitHub CLI alternative:
+
+```powershell
+gh auth login
+gh release create v1.4.1 `
+  "release\whatsapp\Silent-Scheduler-v1.4.1.apk" `
+  "release\Silent-Scheduler-v1.4.1-code17-playstore.aab" `
+  "release\whatsapp\Silent-Scheduler-v1.4.1-whatsapp.zip" `
+  "release\SHA256SUMS.txt" `
+  --repo HamzaBilal07/Silent-Scheduler `
+  --title "Silent Scheduler v1.4.1" `
+  --notes "Adds current prayer row highlighting, system-following orientation, and reliability improvements." `
+  --latest
+```
+
+To remove an old release with GitHub CLI:
+
+```powershell
+gh release delete v1.3.9 --repo HamzaBilal07/Silent-Scheduler --yes
+```
+
+Only delete old releases when you are sure users no longer need that version.
 
 ## Project Structure
 
 ```text
 app/src/main/java/com/mhamz/prayerdndmanager/
-  data/          Room, repositories, DataStore, location and prayer timing data
-  domain/        Domain models, repeat-day logic, time calculations, ayah provider
-  permissions/   Permission checks and settings intents
-  receiver/      Alarm, daily sync, and reboot receivers
+  data/          Room database, repositories, DataStore, location and prayer timings
+  domain/        Models, repeat-day logic, time calculations, ayah provider
+  permissions/   Permission checks and Android settings helpers
+  receiver/      Alarm, reboot, and daily sync receivers
   scheduler/     AlarmManager scheduling and DND control
   ui/            Compose screens, navigation, and ViewModels
 ```
 
-## Documentation
+## Repository Contents
 
-- `PLAY_STORE_CHECKLIST.md`: Google Play release checklist
-- `STORE_LISTING_DRAFT.md`: draft Play Store listing content
-- `PRIVACY_POLICY_DRAFT.md`: privacy policy draft for publication
-- `WHATSAPP_INSTALL_GUIDE.md`: direct APK installation guide
+This repository keeps source code, Gradle files, tests, app resources, Room schemas, documentation, and public store assets.
+
+Generated APK/AAB files, private signing files, local scripts, and machine-specific files are excluded from Git.
 
 ## License
 
-This project is licensed under the MIT License. See `LICENSE` for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
