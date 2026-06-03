@@ -70,6 +70,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -124,6 +125,7 @@ import com.mhamz.prayerdndmanager.ui.SettingsViewModelFactory
 import com.mhamz.prayerdndmanager.ui.theme.PrayerSilentSchedulerTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -182,6 +184,7 @@ private fun PrayerSilentApp(container: AppContainer) {
 
     val navController = rememberNavController()
     val startDestination = if (settings?.onboardingComplete == true) Routes.HOME else Routes.ONBOARDING
+    AutomationReconciler(container)
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable(Routes.ONBOARDING) {
@@ -206,6 +209,37 @@ private fun PrayerSilentApp(container: AppContainer) {
             val id = backStackEntry.arguments?.getLong("id")?.takeIf { it > 0L }
             EditPrayerScreen(id, container, navController)
         }
+    }
+}
+
+@Composable
+private fun AutomationReconciler(container: AppContainer) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
+    var lastReconcileAt by remember { mutableLongStateOf(0L) }
+
+    fun reconcileIfStale(force: Boolean = false) {
+        val now = System.currentTimeMillis()
+        if (force || now - lastReconcileAt >= AUTOMATION_RECONCILE_THROTTLE_MS) {
+            lastReconcileAt = now
+            scope.launch {
+                container.eventHandler.reconcileAutomation()
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        reconcileIfStale(force = true)
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                reconcileIfStale()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 }
 
@@ -1331,6 +1365,19 @@ private fun SettingsScreen(
             uiState.testMessage?.let {
                 Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            HorizontalDivider()
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    "Made by Muhammad Hamza Bilal",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    "© 2026 Muhammad Hamza Bilal. All rights reserved.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
@@ -1485,6 +1532,7 @@ private fun AutoRefreshPrayerTimes(onRefresh: () -> Unit) {
 }
 
 private const val PRAYER_REFRESH_THROTTLE_MS = 10 * 60 * 1000L
+private const val AUTOMATION_RECONCILE_THROTTLE_MS = 30 * 1000L
 
 @Composable
 private fun rememberPermissionSnapshot(): State<PermissionSnapshot> {

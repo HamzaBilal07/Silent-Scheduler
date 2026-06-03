@@ -26,8 +26,8 @@ class SilenceController(
         )
         val nextState = AutomationStateReducer.startPrayer(currentState, prayerId, previous)
         return try {
-            settingsStore.saveAutomationState(nextState)
             notificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
+            settingsStore.saveAutomationState(nextState)
             true
         } catch (_: SecurityException) {
             false
