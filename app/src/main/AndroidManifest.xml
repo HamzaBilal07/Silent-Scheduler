@@ -23,6 +23,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:screenOrientation="unspecified"
             android:theme="@style/Theme.PrayerSilentScheduler">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

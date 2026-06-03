@@ -99,6 +99,7 @@ import com.mhamz.prayerdndmanager.domain.DailyPrayerTimes
 import com.mhamz.prayerdndmanager.domain.FiqhMethod
 import com.mhamz.prayerdndmanager.domain.FRIDAY_ONLY_MASK
 import com.mhamz.prayerdndmanager.domain.NO_REPEAT_DAYS_MASK
+import com.mhamz.prayerdndmanager.domain.PrayerTimeRow
 import com.mhamz.prayerdndmanager.domain.PrayerSchedule
 import com.mhamz.prayerdndmanager.domain.WEEKDAYS_MASK
 import com.mhamz.prayerdndmanager.domain.defaultPrayerNames
@@ -912,6 +913,15 @@ private fun PrayerTimesScreen(
 
 @Composable
 private fun PrayerTimesContent(times: DailyPrayerTimes) {
+    var currentTime by remember(times.date) { mutableStateOf(LocalTime.now()) }
+
+    LaunchedEffect(times.date) {
+        while (true) {
+            currentTime = LocalTime.now()
+            delay(PRAYER_ROW_CLOCK_TICK_MS)
+        }
+    }
+
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
             "Sunrise: ${times.sunrise.toDisplayText()} - ${times.fiqhMethod.label}",
@@ -919,24 +929,54 @@ private fun PrayerTimesContent(times: DailyPrayerTimes) {
             fontWeight = FontWeight.Medium
         )
         times.rows().forEach { row ->
+            val isCurrent = row.isCurrentAt(currentTime)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(
+                        if (isCurrent) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surface
+                        }
+                    )
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     modifier = Modifier.weight(0.7f),
                     text = row.name,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = if (isCurrent) FontWeight.SemiBold else FontWeight.Normal,
+                    color = if (isCurrent) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    }
                 )
                 Text(
                     modifier = Modifier.weight(1.3f),
                     text = "${row.start.toDisplayText()} - ${row.end.toDisplayText()}",
                     style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = if (isCurrent) FontWeight.SemiBold else FontWeight.Medium,
+                    color = if (isCurrent) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    }
                 )
             }
         }
+    }
+}
+
+private fun PrayerTimeRow.isCurrentAt(now: LocalTime): Boolean {
+    return if (end.isAfter(start)) {
+        !now.isBefore(start) && now.isBefore(end)
+    } else {
+        !now.isBefore(start) || now.isBefore(end)
     }
 }
 
@@ -1533,6 +1573,7 @@ private fun AutoRefreshPrayerTimes(onRefresh: () -> Unit) {
 
 private const val PRAYER_REFRESH_THROTTLE_MS = 10 * 60 * 1000L
 private const val AUTOMATION_RECONCILE_THROTTLE_MS = 30 * 1000L
+private const val PRAYER_ROW_CLOCK_TICK_MS = 30 * 1000L
 
 @Composable
 private fun rememberPermissionSnapshot(): State<PermissionSnapshot> {
