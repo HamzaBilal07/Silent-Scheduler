@@ -24,7 +24,7 @@ The easiest way to use the app is to download the latest APK from GitHub Release
 
 1. Open the [Releases page](https://github.com/HamzaBilal07/Silent-Scheduler/releases).
 2. Open the latest release.
-3. Download the APK file, for example `Silent-Scheduler-v1.4.1.apk`.
+3. Download the APK file, for example `Silent-Scheduler-v1.4.2.apk`.
 4. On your Android phone, open the APK.
 5. If Android asks, allow installation from that source.
 6. Open Silent Scheduler and grant the required permissions from the onboarding/settings screen.
@@ -106,8 +106,8 @@ Manual GitHub steps:
 
 1. Go to the [Releases page](https://github.com/HamzaBilal07/Silent-Scheduler/releases).
 2. Click **Draft a new release**.
-3. Choose the latest tag, for example `v1.4.1`.
-4. Title it `Silent Scheduler v1.4.1`.
+3. Choose the latest tag, for example `v1.4.2`.
+4. Title it `Silent Scheduler v1.4.2`.
 5. Upload the generated APK, AAB, ZIP backup, and checksum file.
 6. Mark it as the latest release.
 7. Publish the release.
@@ -117,14 +117,14 @@ GitHub CLI alternative:
 
 ```powershell
 gh auth login
-gh release create v1.4.1 `
-  "release\whatsapp\Silent-Scheduler-v1.4.1.apk" `
-  "release\Silent-Scheduler-v1.4.1-code17-playstore.aab" `
-  "release\whatsapp\Silent-Scheduler-v1.4.1-whatsapp.zip" `
+gh release create v1.4.2 `
+  "release\whatsapp\Silent-Scheduler-v1.4.2.apk" `
+  "release\Silent-Scheduler-v1.4.2-code18-playstore.aab" `
+  "release\whatsapp\Silent-Scheduler-v1.4.2-whatsapp.zip" `
   "release\SHA256SUMS.txt" `
   --repo HamzaBilal07/Silent-Scheduler `
-  --title "Silent Scheduler v1.4.1" `
-  --notes "Adds current prayer row highlighting, system-following orientation, and reliability improvements." `
+  --title "Silent Scheduler v1.4.2" `
+  --notes "Strengthens closed-app DND restore alarms and keeps the previous reliability improvements." `
   --latest
 ```
 

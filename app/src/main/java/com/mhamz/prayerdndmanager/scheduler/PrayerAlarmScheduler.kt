@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import com.mhamz.prayerdndmanager.MainActivity
 import com.mhamz.prayerdndmanager.domain.AppSettings
 import com.mhamz.prayerdndmanager.domain.PrayerSchedule
@@ -31,12 +32,7 @@ class PrayerAlarmScheduler(
             requestCode(REQUEST_START, schedule.id),
             PrayerTimeCalculator.toEpochMillis(start)
         )
-        scheduleAt(
-            schedule.id,
-            ACTION_PRAYER_END,
-            requestCode(REQUEST_END, schedule.id),
-            PrayerTimeCalculator.toEpochMillis(end)
-        )
+        scheduleEndAlarms(schedule.id, PrayerTimeCalculator.toEpochMillis(end))
         if (settings.notifyBeforePrayer) {
             val notificationTime = start.minusMinutes(5)
             if (notificationTime.isAfter(LocalDateTime.now())) {
@@ -54,12 +50,7 @@ class PrayerAlarmScheduler(
 
     fun scheduleEndForActivePrayer(schedule: PrayerSchedule, now: LocalDateTime = LocalDateTime.now()) {
         val end = PrayerTimeCalculator.endForActiveWindow(schedule, now) ?: return
-        scheduleAt(
-            schedule.id,
-            ACTION_PRAYER_END,
-            requestCode(REQUEST_END, schedule.id),
-            PrayerTimeCalculator.toEpochMillis(end)
-        )
+        scheduleEndAlarms(schedule.id, PrayerTimeCalculator.toEpochMillis(end))
     }
 
     fun scheduleAll(schedules: List<PrayerSchedule>, settings: AppSettings) {
@@ -69,6 +60,7 @@ class PrayerAlarmScheduler(
     fun cancel(scheduleId: Long) {
         cancelIntent(scheduleId, ACTION_PRAYER_START, requestCode(REQUEST_START, scheduleId))
         cancelIntent(scheduleId, ACTION_PRAYER_END, requestCode(REQUEST_END, scheduleId))
+        cancelIntent(scheduleId, ACTION_PRAYER_END_BACKUP, requestCode(REQUEST_END_BACKUP, scheduleId))
         cancelIntent(scheduleId, ACTION_PRAYER_PRE_NOTIFY, requestCode(REQUEST_PRE_NOTIFY, scheduleId))
     }
 
@@ -89,19 +81,42 @@ class PrayerAlarmScheduler(
 
     private fun scheduleAt(scheduleId: Long, action: String, requestCode: Int, triggerAtMillis: Long) {
         val pendingIntent = pendingIntent(scheduleId, action, requestCode)
-        if (PermissionHelper.canScheduleExactAlarms(context)) {
+        if (isCriticalAutomationAction(action)) {
+            // AlarmClock alarms are allowed to wake the app process even when the UI is closed.
+            alarmManager?.setAlarmClock(
+                AlarmManager.AlarmClockInfo(triggerAtMillis, showIntent(scheduleId, action, requestCode)),
+                pendingIntent
+            )
+        } else if (PermissionHelper.canScheduleExactAlarms(context)) {
             alarmManager?.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
                 triggerAtMillis,
                 pendingIntent
             )
-        } else {
-            // AlarmClock alarms remain exact even when the special exact-alarm permission is unavailable.
-            alarmManager?.setAlarmClock(
-                AlarmManager.AlarmClockInfo(triggerAtMillis, showIntent(scheduleId, action, requestCode)),
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager?.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerAtMillis,
                 pendingIntent
             )
+        } else {
+            alarmManager?.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
         }
+    }
+
+    private fun scheduleEndAlarms(scheduleId: Long, endAtMillis: Long) {
+        scheduleAt(
+            scheduleId,
+            ACTION_PRAYER_END,
+            requestCode(REQUEST_END, scheduleId),
+            endAtMillis
+        )
+        scheduleAt(
+            scheduleId,
+            ACTION_PRAYER_END_BACKUP,
+            requestCode(REQUEST_END_BACKUP, scheduleId),
+            endAtMillis + RESTORE_WATCHDOG_DELAY_MS
+        )
     }
 
     private fun cancelIntent(scheduleId: Long, action: String, requestCode: Int) {
@@ -138,6 +153,7 @@ class PrayerAlarmScheduler(
     companion object {
         const val ACTION_PRAYER_START = "com.mhamz.prayerdndmanager.PRAYER_START"
         const val ACTION_PRAYER_END = "com.mhamz.prayerdndmanager.PRAYER_END"
+        const val ACTION_PRAYER_END_BACKUP = "com.mhamz.prayerdndmanager.PRAYER_END_BACKUP"
         const val ACTION_PRAYER_PRE_NOTIFY = "com.mhamz.prayerdndmanager.PRAYER_PRE_NOTIFY"
         const val ACTION_QUICK_DND_END = "com.mhamz.prayerdndmanager.QUICK_DND_END"
         const val EXTRA_SCHEDULE_ID = "schedule_id"
@@ -145,9 +161,18 @@ class PrayerAlarmScheduler(
 
         private const val REQUEST_START = 100_000
         private const val REQUEST_END = 200_000
+        private const val REQUEST_END_BACKUP = 250_000
         private const val REQUEST_PRE_NOTIFY = 300_000
         private const val REQUEST_QUICK_DND_END = 400_000
         private const val REQUEST_SHOW_OFFSET = 2_000_000
+        private const val RESTORE_WATCHDOG_DELAY_MS = 60_000L
+
+        private fun isCriticalAutomationAction(action: String): Boolean {
+            return action == ACTION_PRAYER_START ||
+                action == ACTION_PRAYER_END ||
+                action == ACTION_PRAYER_END_BACKUP ||
+                action == ACTION_QUICK_DND_END
+        }
 
         private fun requestCode(base: Int, scheduleId: Long): Int {
             return base + Math.floorMod(scheduleId, 1_000_000L).toInt()

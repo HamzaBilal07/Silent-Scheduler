@@ -24,6 +24,7 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
                             when (intent.action) {
                                 PrayerAlarmScheduler.ACTION_PRAYER_START -> app.container.eventHandler.handleStart(scheduleId)
                                 PrayerAlarmScheduler.ACTION_PRAYER_END -> app.container.eventHandler.handleEnd(scheduleId)
+                                PrayerAlarmScheduler.ACTION_PRAYER_END_BACKUP -> app.container.eventHandler.handleEnd(scheduleId)
                                 PrayerAlarmScheduler.ACTION_PRAYER_PRE_NOTIFY -> app.container.eventHandler.handlePreNotify(scheduleId)
                             }
                         }
